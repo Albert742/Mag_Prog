@@ -346,7 +346,7 @@ def alterSQL(table_name, column_name, column_type, position=None):
     """
     try:
         # Costruisce la query ALTER TABLE
-        sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {column_type}"
+        sql = f"ALTER TABLE `{table_name}` MODIFY `{column_name}` {column_type}"
         if position:
             sql += f" {position}"
 
