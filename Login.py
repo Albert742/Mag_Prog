@@ -1,5 +1,5 @@
 import streamlit as st
-from MagDBcontroller import connessione, selectSQL, add_record
+from utils.MagDBcontroller import connessione, selectSQL, add_record
 import bcrypt
 
 # Hash password with bcrypt
@@ -54,7 +54,7 @@ def login_signup():
                 st.success("Login successful!")
                 st.session_state["authenticated"] = True
                 st.session_state["username"] = username
-                st.experimental_set_query_params(next="dashboard")
+                st.rerun()
             else:
                 st.error("Invalid credentials!")
 

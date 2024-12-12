@@ -1,7 +1,20 @@
 # File: pages/Inventory_Overview.py
+import sys
+import os
+
+# Add the parent directory of the current script to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+
 import streamlit as st
 import pandas as pd
-from MagDBcontroller import connessione, selectSQL
+from utils.MagDBcontroller import connessione, selectSQL
+
+# Authentication Check
+if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+    st.error("Unauthorized access. Please log in first.")
+    st.stop()
+
 
 def fetch_inventory_data():
     with connessione() as conn:
@@ -18,6 +31,11 @@ def fetch_inventory_data():
 st.title("Panoramica Inventario")
 st.sidebar.success("Naviga in un altra pagina utilizzando il menu.")
 
+# Logout Button
+if st.sidebar.button("Log Out"):
+    st.session_state.clear()
+    st.rerun()
+    
 try:
     inventory_data = fetch_inventory_data()
     st.write("### Stato attuale dell inventario")

@@ -1,10 +1,23 @@
 import streamlit as st
 
-# Funzione per la pagina di ingresso del cruscotto
+# Authentication Check
+if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+    st.error("Unauthorized access. Please log in first.")
+    st.stop()
+
+
+# Logout Button
+if st.sidebar.button("Log Out"):
+    st.session_state.clear()
+    st.rerun()
+    
+# Funzione per la pagina di ingresso della dashboard
 def warehouse_dashboard_home():
     st.image("logo.jpg", use_container_width=True)
     st.write("# Benvenuto nella Dashboard di Gestione Magazzino di Food&Pharma 📦")
     st.sidebar.success("Naviga attraverso il menu per accedere alle diverse funzionalità ")
+    st.sidebar.write(f"Logged in as: {st.session_state.get('username', 'Unknown')}")
+
 
     st.markdown(
         """
@@ -38,6 +51,7 @@ def warehouse_dashboard_home():
         "Consiglio: Segna questo pagina come preferita per accedere rapidamente al tuo cruscotto di magazzino.",
         icon="🔖",
     )
+
 
 if __name__ == "__main__":
     warehouse_dashboard_home()
