@@ -1,4 +1,5 @@
 import mariadb
+from datetime import datetime
 import time
 
 def connessione(**kwargs):
@@ -10,7 +11,7 @@ def connessione(**kwargs):
         'user': 'root',
         'password': '1234',
         'database': 'magazzino',
-        'port': 3307
+        'port': 3306
     }
     config = {**default_config, **kwargs}
     conn = mariadb.connect(**config)
@@ -339,6 +340,25 @@ def populateSQL():
     """
 
     with connessione() as conn:
+        
+        # Dipendenti
+        dipendenti = [
+            ("0f8f13e503", "RSSMRA80A01C351O", "Mario", "Rossi", "Operatore", "Magazziniere", "2020-05-15"),
+            ("5f6c960209","BNCLSU98E54C351X", "Luisa", "Bianchi", "Tecnico", "Tecnico", "2019-03-10"),
+            ("0f0abffd80", "VRDGLI90D43C351B", "Giulia", "Verdi", "Amministratore", "Amministratore", "2015-01-20")
+        ]
+        for d in dipendenti:
+            add_record(conn, "Dipendenti", ["ID_Dipendente", "CodiceFiscale", "Nome", "Cognome", "Ruolo", "Mansione", "DataAssunzione"], d)
+        """
+        # Credenziali
+        credenziali = [
+            ("lbianchi", "TestT", "Tecnico", 2),
+            ("gverdi", "TestA", "Amministratore", 3)
+        ]
+        
+        for c in credenziali:
+            add_record(conn, "Credenziali", ["Username", "Password", "Ruolo", "ID_Dipendente"], c)
+
         # Lista di fornitori
         fornitori = [
             ("FreshFarm S.r.l.", "Via delle Mele 25, Torino", "0112233445", "info@freshfarm.it", "IT00112233445"),
@@ -379,20 +399,18 @@ def populateSQL():
             add_record(conn, "Prodotti", 
                 ["ID_Fornitore", "Nome", "Produttore", "Tipo", "UnitaMisura"], p)
 
-        # Lista di zone
+        # Zone
         zone = [
-            ("Stoccaggio_Alimentari", "Zona per lo stoccaggio di prodotti alimentari freschi e confezionati."),
-            ("Stoccaggio_Farmaceutici", "Zona per lo stoccaggio di prodotti farmaceutici, medicinali e integratori."),
-            ("Carico", "Zona per il ricevimento e carico merci."),
-            ("Scarico", "Zona per lo scarico e la distribuzione delle merci.")
+            ("Stoccaggio Alimenti", "Stoccaggio_Alimentari", "Zona dedicata ai prodotti alimentari."),
+            ("Stoccaggio Farmaci", "Stoccaggio_Farmaceutici", "Zona dedicata ai prodotti farmaceutici."),
+            ("Baia Carico", "Carico", "Area di carico merci."),
+            ("Baia Scarico", "Scarico", "Area di scarico merci."),
         ]
-
-        # Inserimento nella tabella Zone
         for z in zone:
             add_record(conn, "Zone", 
                 ["Nome", "Tipo", "Descrizione"], z)
 
-        # Lista di scaffalature
+        # Scaffalature
         scaffalature = [
             (1, "Scaffale A1", 100),  # Scaffale per alimentari
             (1, "Scaffale A2", 80),   # Scaffale per alimentari
@@ -407,7 +425,7 @@ def populateSQL():
             add_record(conn, "Scaffalature", 
                 ["ID_Zona", "Nome", "Capacita"], s)
 
-        # Lista di lotti
+        # Lotti
         lotti = [
             # Prodotti alimentari
             (1, 1, 1, "Lotto001", "2025-12-31", 500, 2.50, "2024-11-01", "Disponibile"),  # Mela Golden
@@ -426,8 +444,8 @@ def populateSQL():
         for l in lotti:
             add_record(conn, "Lotti", 
                 ["ID_Prodotto", "ID_Zona", "ID_Scaffalatura", "Lotto", "Scadenza", "Quantita", "PrezzoAcquisto", "DataRicevimento", "Stato"], l)
-
-        # Lista di clienti
+                
+        # Clienti
         clienti = [
             ("Supermercato Sole", "Via Luminoso 12, Roma", "0643212345", "info@supermercatosole.it", "IT11223344550"),
             ("Farmacia Salute", "Corso Medicina 8, Napoli", "0819876543", "ordini@farmaciasalute.it", "IT22334455660"),
@@ -441,7 +459,7 @@ def populateSQL():
             add_record(conn, "Clienti", 
                 ["Nome", "Indirizzo", "Telefono", "Email", "PartitaIVA"], c)
 
-        # Lista di ordini
+        # Ordini
         ordini = [
             # Ordini di entrata (fornitori)
             ("Entrata", 1, None, "In elaborazione"),  # Acquisto da FreshFarm S.r.l.
@@ -456,8 +474,8 @@ def populateSQL():
         for o in ordini:
             add_record(conn, "Ordini", 
                 ["Tipo", "ID_Fornitore", "ID_Cliente", "Stato"], o)
-
-        # Lista di dettagli ordini
+            
+        # Dettagli Ordini
         dettagli_ordini = [
             # Dettagli per ordini di entrata
             (1, 1, 200),  # Lotto001 (Mela Golden) acquistato nel primo ordine
@@ -524,8 +542,8 @@ def populateSQL():
 
         # Lista di richieste di movimento
         richieste = [
-            (1, 2, 2, 1, "In attesa"),  # Lotto 1 verso Zona 2
-            (6, 1, 1, 2, "Assegnata", 1),  # Lotto 6 verso Zona 1, robot assegnato
+            (1, 2, 2, 1, "In attesa", 1),  # Lotto 1 verso Zona 2
+            (6, 1, 1, 2, "Assegnata", 2),  # Lotto 6 verso Zona 1, robot assegnato
         ]
 
         # Inserimento nella tabella RichiesteMovimento
@@ -554,8 +572,6 @@ def populateSQL():
         for c in controlli:
             add_record(conn, "ControlloQualitaMovimenti", 
                 ["ID_Richiesta", "ID_Robot", "Esito", "Note"], c)
-
-        # Popolamento tabelle: Gestione veicoli e consegne, manutenzione, personale e accesso
 
         # Veicoli
         veicoli = [
@@ -607,15 +623,6 @@ def populateSQL():
         for mv in manutenzione_veicoli:
             add_record(conn, "ManutenzioneVeicoli", ["ID_Veicolo", "DataManutenzione", "Tipo", "Stato", "Note"], mv)
 
-        # Dipendenti
-        dipendenti = [
-            ("Mario", "Rossi", "Magazziniere", "2020-05-15"),
-            ("Luisa", "Bianchi", "Tecnico", "2019-03-10"),
-            ("Giulia", "Verdi", "Amministratore", "2015-01-20")
-        ]
-        for d in dipendenti:
-            add_record(conn, "Dipendenti", ["Nome", "Cognome", "Mansione", "DataAssunzione"], d)
-
         # TurniDipendenti
         turni = [
             (1, "2024-11-28 08:00:00", "2024-11-28 16:00:00", "Magazziniere"),
@@ -624,15 +631,6 @@ def populateSQL():
         ]
         for t in turni:
             add_record(conn, "TurniDipendenti", ["ID_Dipendente", "DataInizio", "DataFine", "Mansione"], t)
-
-        # Credenziali
-        credenziali = [
-            ("mrossi", "hashed_password_1", "Operatore", 1),
-            ("lbianchi", "hashed_password_2", "Tecnico", 2),
-            ("gverdi", "hashed_password_3", "Amministratore", 3)
-        ]
-        for c in credenziali:
-            add_record(conn, "Credenziali", ["Username", "PasswordHash", "Ruolo", "ID_Dipendente"], c)
 
         # AccessiUtenti
         accessi = [
@@ -651,7 +649,7 @@ def populateSQL():
         ]
         for le in log_eventi:
             add_record(conn, "LogEventi", ["DataOra", "ID_Utente", "Azione", "Dettagli"], le)
-
+"""
 def alterSQL(table_name, column_name, column_type, position=None):
     """
     Aggiunge una colonna a una tabella esistente.
@@ -733,9 +731,9 @@ def updateSQL(table_name, column_name, value, conditions=None):
 
 
 if __name__ == '__main__':
-    #pass
+    pass
     #createSQL()
-    populateSQL()
+    #populateSQL()
     #askSQL()
     #alterSQL('Product', 'new_column', 'VARCHAR(50)')
     #dropSQL('ControlloQualitaMovimenti', if_exists=False)
